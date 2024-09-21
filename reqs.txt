@@ -1,0 +1,9 @@
+seaborn
+pandas
+numpy
+scikit-learn
+dill
+flask
+datasets
+load_dataset
+-e .
