@@ -1,6 +1,6 @@
 import sys
 from dataclasses import dataclass
-
+import re
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
@@ -43,13 +43,24 @@ class DataTransformation:
             - Standardisation
             
             '''
-            num_pipeline = Pipeline(
-                steps=[
-                    ("Imputer",SimpleImputer(strategy="median")), 
-                    ("Scaler",StandardScaler())
+            #num_pipeline = Pipeline(
+                #steps=[
+                 #   ("Imputer",SimpleImputer(strategy="median")), 
+                #    ("Scaler",StandardScaler())           ]
+            #)
 
-                ]
-            )
+            def preprocess_text(df, text_columns):
+                              
+                for col in text_columns:
+                    # Lowercase the text
+                    df[col] = df[col].str.lower()
+        
+                    # Remove punctuation
+                    df[col] = df[col].apply(lambda x: re.sub(r'[^\w\s]', '', x))
+        
+                    # Remove extra whitespace
+                    df[col] = df[col].apply(lambda x: re.sub(r'\s+', ' ', x).strip())
+                    return df
 
             # cat_pipeline = Pipeline(
             #     steps=[
@@ -93,22 +104,19 @@ class DataTransformation:
 
             preprocessing_obj = self.get_data_transformer_object()
 
-            target_column_name = "Outcome"
+            target_column_name = "label"
 
-            numerical_columns = ['Pregnancies', 
-                'Glucose', 
-                'BloodPressure', 
-                'SkinThickness',
-                'Insulin',
-                'BMI', 
-                'DiabetesPedigreeFunction',
-                'Age'
+            text_columns = ['title', 
+                'text', 
+
             ]
+            cat_columns = ['subject']
+                
             
-            input_feature_train_df = train_df.drop(columns=[target_column_name],axis = 1)
+            input_feature_train_df = train_df.drop(columns=[target_column_name,"0","date"],axis = 1)
             target_feature_train_df = train_df[target_column_name]
 
-            input_feature_test_df = test_df.drop(columns=[target_column_name],axis = 1)
+            input_feature_test_df = test_df.drop(columns=[target_column_name,"0","date"],axis = 1)
             target_feature_test_df = test_df[target_column_name]
 
             logging.info(f"Applying preprocessing object on training dataframe and testing dataframe.")
@@ -153,16 +161,3 @@ class DataTransformation:
 
 
 
-def preprocess_text(df, text_columns):
-    """Preprocess multiple text columns in the DataFrame."""
-    for col in text_columns:
-        # Lowercase the text
-        df[col] = df[col].str.lower()
-        
-        # Remove punctuation
-        df[col] = df[col].apply(lambda x: re.sub(r'[^\w\s]', '', x))
-        
-        # Remove extra whitespace
-        df[col] = df[col].apply(lambda x: re.sub(r'\s+', ' ', x).strip())
-    
-    return df
