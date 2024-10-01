@@ -1,6 +1,6 @@
 import sys
 
-from logger import logging
+from src.logger import logging
 
 '''
 The sys module in Python provides various functions and variables,
