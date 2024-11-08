@@ -5,5 +5,5 @@ scikit-learn
 dill
 flask
 datasets
-
+nltk
 -e .

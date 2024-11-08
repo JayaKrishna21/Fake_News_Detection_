@@ -16,13 +16,13 @@ from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 
 #from src.components.data_loader import get_combined_data
-'''
+
 from src.components.data_transformation import DataTransformation
-from src.components.data_transformation import DataTransformatidironConfig
+from src.components.data_transformation import DataTransformationConfig
 
 from src.components.model_trainer import ModelTrainerConfig
 from src.components.model_trainer import ModelTrainer
-'''
+
 
 @dataclass
 
@@ -54,7 +54,7 @@ class DataIngestion:
 
             test_set = pd.DataFrame(df['test'])
 
-            
+            os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)
 
             #train_set,test_set = train_test_split(df,test_size = 0.2 , random_state = 65)
 
@@ -77,7 +77,16 @@ class DataIngestion:
             raise CustomException(e,sys)
         
 if __name__ == "__main__":
-    obj=DataIngestion()
-    obj.initiate_data_ingestion()
 
-    
+    #Data Ingestion
+    obj=DataIngestion()
+    train_data,test_data = obj.initiate_data_ingestion()
+
+    # Data Transformation
+    data_transformation = DataTransformation()
+    train_arr, test_arr,_ = data_transformation.initiate_data_transformation(train_data, test_data) # train,test datasets are transformed into arrays using coulmn transformer
+
+    #Model Training
+    modeltrainer = ModelTrainer()
+    print(modeltrainer.initiate_model_trainer(train_arr,test_arr))
+    # giving the model : transformed train,test arrays to get better accuracy    
