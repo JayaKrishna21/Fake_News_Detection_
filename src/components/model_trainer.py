@@ -48,9 +48,18 @@ class ModelTrainer:
                 test_array[:,-1] #[include all the rows, last column] ---> y_test
 
             )
-            #creating dictionary of models
+            if hasattr(y_train, "toarray"):  # Check if y_train is sparse
+                y_train = y_train.toarray().ravel()
+            else:
+                y_train = y_train.ravel()
 
-            models = {
+            if hasattr(y_test, "toarray"):  # Check if y_test is sparse
+                y_test = y_test.toarray().ravel()
+            else:
+                y_test = y_test.ravel()
+
+            models = {'RandomForest':RandomForestClassifier()}
+            """{
                 'SVC': SVC(),
                 'LogisticRegression': LogisticRegression(),
                 'RandomForest': RandomForestClassifier(),
@@ -60,8 +69,12 @@ class ModelTrainer:
                 'GradientBoosting':GradientBoostingClassifier(),
                 'NeuralNetwork': MLPClassifier(),
             }
-
-            params = {
+            """
+            
+            param = {'RandomForest':{'max_depth': [None,2,10]}}
+            #params = {'RandomForest': {'estimators_': [DecisionTreeClassifier()], 'max_depth': [None,3,2, 10, 20, 50]}}
+            """
+            {
                 'SVC': {'C':[0.001, 0.01, 0.1, 1], 'kernel': ['linear', 'rbf']},
                 'LogisticRegression': {'C': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 100]},
                 'RandomForest': {'n_estimators': [10,20,50, 100, 200, 500], 'max_depth': [None,3,2, 10, 20, 50]},
@@ -71,21 +84,21 @@ class ModelTrainer:
                 'GradientBoosting': {'n_estimators': [50, 100, 200,500], 'learning_rate': [0.05, 0.1, 0.2], 'max_depth': [3, 5, 7, 9]},
                 'NeuralNetwork': {'hidden_layer_sizes': [(50,), (100,), (50,50), (100,50)], 'activation': ['logistic', 'relu'], 'alpha': [0.0001, 0.001, 0.01]}
             }   
+            """
 
             # Creating a function which stores accuracy scores of models mentioned above iteratively
 
-            model_report:dict = evaluate_model(X_train = X_train, y_train = y_train, X_test = X_test, y_test = y_test, models = models,param=params)
+            model_report:dict = evaluate_model(X_train = X_train, y_train = y_train, X_test = X_test, y_test = y_test, models = models,param=param)
+
 
 
             # best model score
 
-            best_model_score = max(sorted(model_report.values()))
+            #best_model_score = max(sorted(model_report.values()))
 
             # To get best model name from dict
 
-            best_model_name = list(model_report.keys())[
-                list(model_report.values()).index(best_model_score)
-                ]
+            best_model_name = list(model_report.keys())[0]
             
             
 
@@ -96,7 +109,7 @@ class ModelTrainer:
             #     #if the best model is having less than 0.6 score, then it is not considered to be a good model at all
             #     raise CustomException("No Best model found",sys)
             
-            logging.info(f"Best model on both training and test dataset")
+            #logging.info(f"Best model on both training and test dataset")
 
             save_object(
 
@@ -105,8 +118,23 @@ class ModelTrainer:
             ) # dumping the file_path into model.pkl file as model_trainer_config path is given to model.pkl file
 
             predicted = best_model.predict(X_test)
-
+            logging.info("Model Trainer initiated")
+            logging.info("Model Trainer config: {}".format(self.model_trainer_config.__dict__))
+            logging.info("Splitting training and test input data")
+            logging.info("Training data shape: {}".format(train_array.shape))
+            logging.info("Test data shape: {}".format(test_array.shape))
+            logging.info("Models and their parameters: {}".format(models))
+            logging.info("Model evaluation initiated")
+            logging.info("Model evaluation completed")
+            logging.info("Best model on both training and test dataset: {}".format(best_model_name))
+            #logging.info("Best model score: {}".format(best_model_score))
+            logging.info("Saving the best model")
+            logging.info("Model saved at: {}".format(self.model_trainer_config.trained_model_file_path))
+            logging.info("Predicting on test data")
+            logging.info("Prediction completed")
             r2_square = r2_score(y_test,predicted)
+            logging.info("R2 score: {}".format(r2_square))  
+            
             return r2_square
 
 
