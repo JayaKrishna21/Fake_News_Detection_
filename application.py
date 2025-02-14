@@ -34,7 +34,7 @@ def predict_datapoint():
             news=request.form.get('news'),
  
         )
-        formatted_data = 
+        
         pred_df = data.get_data_as_df()
         print(pred_df)
 
