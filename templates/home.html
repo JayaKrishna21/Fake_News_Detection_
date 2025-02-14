@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e1e1e, #3a3a3a);
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 50px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            width: 40%;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        input, textarea {
+            width: 90%;
+            margin: 10px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1.1em;
+        }
+
+        textarea {
+            height: 100px;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            box-shadow: 0px 0px 10px #ffcc00;
+        }
+
+        button {
+            background: #ffcc00;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: 0.3s ease-in-out;
+        }
+
+        button:hover {
+            background: #ff9900;
+            transform: scale(1.05);
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.5em;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            display: inline-block;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fake News Detector</h1>
+    <div class="container">
+        <form action="/predict" method="post">
+            <input type="text" name="title" placeholder="Enter News Title" required>
+            <textarea name="news" placeholder="Enter News Content" required></textarea>
+            <button type="submit">Check</button>
+        </form>
+        {% if results %}
+        <div class="result">
+            Prediction: <strong>{{ results }}</strong>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

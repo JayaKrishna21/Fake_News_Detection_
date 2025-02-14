@@ -48,31 +48,30 @@ class DataIngestion:
 
             #df.to_csv(self.ingestion_config.raw_data_path,index=False,header=True)
 
-            logging.info("Train Test Split initiated")
-
             train_set = pd.DataFrame(df['train'])
-
             test_set = pd.DataFrame(df['test'])
+
+            # Merge 'title' and 'text' into a single 'news' column
+            train_set["news"] = train_set["title"] + " " + train_set["text"]
+            test_set["news"] = test_set["title"] + " " + test_set["text"]
+
+            # Keep only the necessary columns
+            train_set = train_set[['news', 'label']]
+            test_set = test_set[['news', 'label']]
 
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path), exist_ok=True)
 
-            #train_set,test_set = train_test_split(df,test_size = 0.2 , random_state = 65)
+            train_set.to_csv(self.ingestion_config.train_data_path, index=False)
+            test_set.to_csv(self.ingestion_config.test_data_path, index=False)
 
-            train_set.to_csv(self.ingestion_config.train_data_path,index=False,header=True)
+            logging.info("✅ Train and test datasets saved successfully")
 
-            logging.info("Train Dataset loaded from HuggingFace")
-
-            test_set.to_csv(self.ingestion_config.test_data_path,index=False,header=True)
-
-            logging.info("Test Dataset loaded from HuggingFace")
-
-            logging.info("Ingestion of data is completed")
-
-            return(
+            return (
                 self.ingestion_config.train_data_path,
                 self.ingestion_config.test_data_path
-
             )
+
+            
         except Exception as e:
             raise CustomException(e,sys)
         

@@ -1,3 +1,5 @@
+
+
 # This is the application file that will be uploaded into the AWS BeanStalk 
 # So application.py is the replica of the app.py
 # Where app..py  is the main application file for the flask deployement
@@ -9,7 +11,7 @@ import pandas as pd
 
 
 
-from src.pipeline.predict_pipeline import CustomData,PredictPipeline
+from src.pipeline.test_pipeline import CustomData,PredictPipeline
 application = Flask(__name__)
 
 app = application
@@ -21,17 +23,18 @@ app = application
 def index():
     return render_template('home.html')
 
-@app.route('/predict data',methods = ['GET','POST'])
+@app.route('/predict',methods = ['GET','POST'])
 def predict_datapoint():
     if request.method == 'GET':
         return render_template('home.html')
     else:
+        score = 0
         data = CustomData(
             title=request.form.get('title'),
-            text=request.form.get('text'),
-            BloodPressure=request.form.get('BloodPressure'),
-            
+            news=request.form.get('news'),
+ 
         )
+        formatted_data = 
         pred_df = data.get_data_as_df()
         print(pred_df)
 
@@ -42,8 +45,8 @@ def predict_datapoint():
         if score == 0:
             tag = "FAKE"
         
-        else:
-            tag = "Real"
+        else:   
+            tag = "REAL"
 
         
         return render_template('home.html',results = tag)
@@ -51,8 +54,3 @@ def predict_datapoint():
 
 if __name__ == "__main__":
     app.run(host = "0.0.0.0") #(,debug = True)
-
-
-# In the application.py file.....app.run(.... ,debug = True)....debug =TRUE needs to be ommited
-
-

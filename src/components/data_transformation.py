@@ -30,7 +30,9 @@ class DataTransformation:
         self.stop_words = set(stopwords.words('english'))        
         self.stemmer = PorterStemmer()
         self.data_transformation_config = DataTransformationConfig()
-    
+
+        
+    '''    
     def text_cleaning(self,text):
         text = text.lower()
         
@@ -44,70 +46,31 @@ class DataTransformation:
         cleaned_text = ' '.join([self.stemmer.stem(word) for word in words])
         
         return cleaned_text
-
-        
-    
+    '''
 
     def get_data_transformer_object(self):
 
         # Responsible for Data Transformation ( Standardisation / Encoding )
         try:
             
-            '''
-            cat_col = ['subject']
-
-            output = ['label']
-
             
-            train_df['news'] = (train_df['title'] + ' ' + train_df['text']).apply(self.text_cleaning)
-            test_df['news'] = (test_df['title'] + ' ' + test_df['text']).apply(self.text_cleaning)
-
-            logging.info("Text Cleaning is done")
-
-
-
-
-            text_col = ['news']       
-            '''
-
             text_pipeline = Pipeline(
                 steps=[
                     
-                    ("Vectorising",TfidfVectorizer(preprocessor=self.text_cleaning))
+                    ("Vectorising",TfidfVectorizer(stop_words="english",lowercase=True))
 
                 ]
             )
             logging.info("TF-IDF applied")
 
-            cat_pipeline = Pipeline(
-                 steps=[
-                     ("Imputer",SimpleImputer(strategy="most_frequent")), 
-                     ("One_Hot_Encoder",OneHotEncoder()),
-                     ("Scaler",StandardScaler(with_mean=False))
 
-                 ]
-            )
-            logging.info("Subject column is treated with One Hot Encoding")
-
-            logging.info("Subject column Standardisation completed")
             
-
-            # logging.info("Categorical columns OneHotEncoding completed")
-
-            preprocessor = ColumnTransformer(
-                [("Text_pipeline", text_pipeline, "news"),
-                 ("Cat_pipeline", cat_pipeline, ['subject'])]
-            )
-
-            return preprocessor
+            return text_pipeline
+        
 
         except Exception as e:
             raise CustomException(e,sys)
     
-    
-
-
-
     def initiate_data_transformation(self,train_path,test_path):
 
         try:
@@ -115,63 +78,47 @@ class DataTransformation:
 
             test_df = pd.read_csv(test_path)
             logging.info("Read train and test data completed")
-
-            train_df['news'] = train_df['title'] + " " + train_df['text']
-            test_df['news'] = test_df['title'] + " " + test_df['text']
-
-            train_df.columns = train_df.columns.str.strip()
-            test_df.columns = test_df.columns.str.strip()
-
-            train_df = train_df.loc[:, ~train_df.columns.str.contains('^Unnamed')]
-            test_df = test_df.loc[:, ~test_df.columns.str.contains('^Unnamed')]
-
-            train_df = train_df.drop(columns=['date', 'title', 'text'])
-            test_df = test_df.drop(columns=['date', 'title', 'text'])
-
+            # Ensure subject column does not exist
             
+            if "subject" in train_df.columns:
+                train_df = train_df.drop(columns=["subject"])
+            if "subject" in test_df.columns:
+                test_df = test_df.drop(columns=["subject"])
+
+            target_column_name = "label"
+            # Separate features and target
+            X_train = train_df["news"]
+            y_train = train_df[target_column_name]
+
+            X_test = test_df["news"]
+            y_test = test_df[target_column_name]
 
             logging.info("Obtaining preprocessing object")
 
             preprocessing_obj = self.get_data_transformer_object()
+            # Transform data
+            X_train_transformed = preprocessing_obj.fit_transform(X_train)
+            X_test_transformed = preprocessing_obj.transform(X_test)
 
-            target_column_name = "label"
+            # Convert labels to sparse matrices
+            y_train_sparse = scipy.sparse.csr_matrix(y_train.values.reshape(-1, 1))
+            y_test_sparse = scipy.sparse.csr_matrix(y_test.values.reshape(-1, 1))
 
-            
-            
-            input_feature_train_df = train_df.drop(columns=[target_column_name],axis = 1)
-            target_feature_train_df = train_df[target_column_name]
+            # Combine transformed inputs with target labels
+            train_arr_sparse = scipy.sparse.hstack([X_train_transformed, y_train_sparse])
+            test_arr_sparse = scipy.sparse.hstack([X_test_transformed, y_test_sparse])
 
-            input_feature_test_df = test_df.drop(columns=[target_column_name],axis = 1)
-            target_feature_test_df = test_df[target_column_name]
+            logging.info("✅ Data transformation completed and saved")
 
-            logging.info(f"Applying preprocessing object on training dataframe and testing dataframe.")
+            # Save preprocessor
+            save_object(
+                file_path=self.data_transformation_config.preprocessor_obj_file_path,
+                obj=preprocessing_obj
+            )
 
-            input_feature_train_arr = preprocessing_obj.fit_transform(input_feature_train_df) #fit_transform for train dataset
-            input_feature_test_arr = preprocessing_obj.transform(input_feature_test_df) #transform for test data
-            
-            
-
-            input_feature_train_arr = input_feature_train_arr
-            input_feature_test_arr = input_feature_test_arr
-
-            # Reshape target labels to a column vector
-            target_feature_train_df_reshaped = target_feature_train_df.values.reshape(-1, 1)
-            target_feature_test_df_reshaped = target_feature_test_df.values.reshape(-1, 1)
-
-            target_feature_train_sparse = scipy.sparse.csr_matrix(target_feature_train_df_reshaped)
-            target_feature_test_sparse = scipy.sparse.csr_matrix(target_feature_test_df_reshaped)
-
-            # Concatenate sparse feature matrix with the target labels
-            train_arr_sparse = scipy.sparse.hstack([input_feature_train_arr, target_feature_train_sparse])
-            test_arr_sparse = scipy.sparse.hstack([input_feature_test_arr, target_feature_test_sparse])
-
+        
             logging.info(f"Saved preprocessing object.")
 
-            save_object(
-                # used to save pickle file
-                file_path = self.data_transformation_config.preprocessor_obj_file_path,
-                obj = preprocessing_obj
-            )
 
             return(
                 train_arr_sparse,
