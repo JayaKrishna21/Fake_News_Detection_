@@ -48,6 +48,7 @@ class ModelTrainer:
                 test_array[:,-1] #[include all the rows, last column] ---> y_test
 
             )
+            
             if hasattr(y_train, "toarray"):  # Check if y_train is sparse
                 y_train = y_train.toarray().ravel()
             else:
@@ -57,9 +58,9 @@ class ModelTrainer:
                 y_test = y_test.toarray().ravel()
             else:
                 y_test = y_test.ravel()
+            
 
-            models = {'RandomForest':RandomForestClassifier()}
-            """{
+            models = {
                 'SVC': SVC(),
                 'LogisticRegression': LogisticRegression(),
                 'RandomForest': RandomForestClassifier(),
@@ -69,12 +70,10 @@ class ModelTrainer:
                 'GradientBoosting':GradientBoostingClassifier(),
                 'NeuralNetwork': MLPClassifier(),
             }
-            """
             
-            param = {'RandomForest':{'max_depth': [None,2,10]}}
-            #params = {'RandomForest': {'estimators_': [DecisionTreeClassifier()], 'max_depth': [None,3,2, 10, 20, 50]}}
-            """
-            {
+            
+            
+            params = {
                 'SVC': {'C':[0.001, 0.01, 0.1, 1], 'kernel': ['linear', 'rbf']},
                 'LogisticRegression': {'C': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 100]},
                 'RandomForest': {'n_estimators': [10,20,50, 100, 200, 500], 'max_depth': [None,3,2, 10, 20, 50]},
@@ -84,11 +83,11 @@ class ModelTrainer:
                 'GradientBoosting': {'n_estimators': [50, 100, 200,500], 'learning_rate': [0.05, 0.1, 0.2], 'max_depth': [3, 5, 7, 9]},
                 'NeuralNetwork': {'hidden_layer_sizes': [(50,), (100,), (50,50), (100,50)], 'activation': ['logistic', 'relu'], 'alpha': [0.0001, 0.001, 0.01]}
             }   
-            """
+            
 
             # Creating a function which stores accuracy scores of models mentioned above iteratively
 
-            model_report:dict = evaluate_model(X_train = X_train, y_train = y_train, X_test = X_test, y_test = y_test, models = models,param=param)
+            model_report:dict = evaluate_model(X_train = X_train, y_train = y_train, X_test = X_test, y_test = y_test, models = models,param=params)
 
 
 

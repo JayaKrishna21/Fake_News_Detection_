@@ -52,8 +52,8 @@ def evaluate_model(X_train, y_train, X_test,y_test, models, param):
 
         model.fit(X_train,y_train) # Training the model
 
-        y_train_pred = grid_search.predict(X_train)
-        y_test_pred = grid_search.predict(X_test)
+        y_train_pred = model.predict(X_train)
+        y_test_pred = model.predict(X_test)
 
         train_model_score = r2_score(y_train,y_train_pred)
 

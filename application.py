@@ -43,10 +43,10 @@ def predict_datapoint():
         score = int(results[0])
 
         if score == 0:
-            tag = "FAKE"
+            tag = "REAL"
         
         else:   
-            tag = "REAL"
+            tag = "FAKE"
 
         
         return render_template('home.html',results = tag)
